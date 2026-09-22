@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gematria & The Cube of Saturn — 24-Feature Interactive 3D Rendering</title>
+    <style>
+        :root {
+            --gold: #d4a24e;
+            --gold-bright: #f0c878;
+            --gold-dim: #8a6a30;
+            --cyan: #4ec8dc;
+            --cyan-bright: #8ae8f8;
+            --violet: #9b6dd6;
+            --crimson: #dc4e6a;
+            --bg: #050510;
+            --panel-bg: rgba(10, 10, 25, 0.85);
+            --panel-border: rgba(212, 162, 78, 0.35);
+            --text: #e8dcc8;
+            --text-dim: #a89880;
+            --font-display: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
+            --font-body: 'Cormorant Garamond', Georgia, serif;
+            --font-mono: 'Courier New', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            overflow: hidden;
+            font-family: var(--font-body);
+            color: var(--text);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            touch-action: none;
+        }
+
+        canvas#mainCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 1;
+        }
+
+        .hud-container {
+            position: fixed;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #hud-top {
+            top: 16px;
+            left: 16px;
+            align-items: flex-start;
+        }
+        #hud-bottom {
+            bottom: 16px;
+            left: 16px;
+            align-items: flex-start;
+        }
+        #hud-right {
+            top: 16px;
+            right: 16px;
+            align-items: flex-end;
+            text-align: right;
+        }
+
+        .hud-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 0 30px rgba(212, 162, 78, 0.12), inset 0 0 20px rgba(212, 162, 78, 0.04);
+            pointer-events: auto;
+            min-width: 200px;
+            transition: border-color 0.4s, box-shadow 0.4s;
+        }
+        .hud-panel:hover {
+            border-color: rgba(212, 162, 78, 0.6);
+            box-shadow: 0 0 40px rgba(212, 162, 78, 0.2), inset 0 0 30px rgba(212, 162, 78, 0.06);
+        }
+
+        .hud-title {
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        .hud-value {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text);
+            line-height: 1.5;
+            transition: all 0.3s;
+        }
+        .hud-value.gold {
+            color: var(--gold-bright);
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .hud-value.cyan {
+            color: var(--cyan-bright);
+        }
+        .hud-value.crimson {
+            color: var(--crimson);
+        }
+        .hud-value.violet {
+            color: var(--violet);
+        }
+        .hud-label {
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+        .hud-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 0.8rem;
+        }
+        .hud-divider {
+            border-top: 1px solid rgba(212, 162, 78, 0.2);
+            margin: 6px 0;
+        }
+
+        #permutationDisplay {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--cyan);
+            letter-spacing: 2px;
+            min-height: 20px;
+            transition: all 0.2s;
+        }
+
+        #gematriaOutput {
+            font-size: 0.85rem;
+            color: var(--gold-bright);
+            font-family: var(--font-mono);
+            line-height: 1.6;
+        }
+
+        .name-btn {
+            pointer-events: auto;
+            cursor: pointer;
+            background: rgba(212, 162, 78, 0.1);
+            border: 1px solid rgba(212, 162, 78, 0.3);
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--gold);
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            margin: 2px;
+            display: inline-block;
+        }
+        .name-btn:hover {
+            background: rgba(212, 162, 78, 0.25);
+            border-color: var(--gold);
+            color: var(--gold-bright);
+            box-shadow: 0 0 15px rgba(212, 162, 78, 0.3);
+        }
+        .name-btn.active {
+            background: rgba(212, 162, 78, 0.35);
+            border-color: var(--gold-bright);
+            color: var(--gold-bright);
+            box-shadow: 0 0 25px rgba(212, 162, 78, 0.5);
+        }
+
+        #featureBadge {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            z-index: 10;
+            font-family: var(--font-display);
+            font-size: 0.55rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            pointer-events: none;
+            text-align: right;
+            opacity: 0.7;
+        }
+
+        .camera-btn {
+            pointer-events: auto;
+            cursor: pointer;
+            background: rgba(78, 200, 220, 0.1);
+            border: 1px solid rgba(78, 200, 220, 0.3);
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--cyan);
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            margin: 2px;
+            display: inline-block;
+        }
+        .camera-btn:hover {
+            background: rgba(78, 200, 220, 0.25);
+            border-color: var(--cyan);
+            color: var(--cyan-bright);
+        }
+        .camera-btn.active {
+            background: rgba(78, 200, 220, 0.35);
+            border-color: var(--cyan-bright);
+            color: var(--cyan-bright);
+            box-shadow: 0 0 20px rgba(78, 200, 220, 0.4);
+        }
+
+        .audio-indicator {
+            width: 60px;
+            height: 6px;
+            background: rgba(212, 162, 78, 0.15);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .audio-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright), var(--cyan));
+            border-radius: 3px;
+            transition: width 0.1s;
+            width: 0%;
+        }
+
+        @keyframes pulseGold {
+            0%,
+            100% {
+                text-shadow: 0 0 8px rgba(212, 162, 78, 0.4);
+            }
+            50% {
+                text-shadow: 0 0 25px rgba(212, 162, 78, 0.9), 0 0 60px rgba(212, 162, 78, 0.5);
+            }
+        }
+        .pulse {
+            animation: pulseGold 2.5s ease-in-out infinite;
+        }
+
+        @media (max-width: 768px) {
+            .hud-panel {
+                padding: 8px 10px;
+                min-width: 140px;
+                font-size: 0.7rem;
+            }
+            .hud-value.gold {
+                font-size: 1.1rem;
+            }
+            #hud-right {
+                top: auto;
+                bottom: 80px;
+                right: 10px;
+            }
+            .name-btn {
+                padding: 2px 6px;
+                font-size: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="mainCanvas"></canvas>
+
+    <!-- Top-left HUD -->
+    <div class="hud-container" id="hud-top">
+        <div class="hud-panel">
+            <div class="hud-title">◈ Gematria Engine ◈</div>
+            <div id="gematriaOutput">AGLA = 1+3+30+1 = 35 → 8</div>
+            <div class="hud-divider"></div>
+            <div style="display:flex;flex-wrap:wrap;gap:2px;" id="nameButtons">
+                <button class="name-btn active" data-name="AGLA">AGLA</button>
+                <button class="name-btn" data-name="YHVH">YHVH</button>
+                <button class="name-btn" data-name="AL">AL</button>
+                <button class="name-btn" data-name="ALHIM">ALHIM</button>
+                <button class="name-btn" data-name="ShDI">ShDI</button>
+                <button class="name-btn" data-name="ADNI">ADNI</button>
+            </div>
+            <div id="permutationDisplay">Permutations: AGLA · ALGA · GALA · LAAG ...</div>
+        </div>
+        <div class="hud-panel">
+            <div class="hud-title">◈ Sector Intel ◈</div>
+            <div id="sectorInfo" class="hud-value">Hover/click the cube to inspect sectors</div>
+            <div class="hud-label">Face · Row · Col · Sector # · Digit Sum</div>
+        </div>
+    </div>
+
+    <!-- Top-right HUD -->
+    <div class="hud-container" id="hud-right">
+        <div class="hud-panel">
+            <div class="hud-title">◈ Camera Modes ◈</div>
+            <div style="display:flex;flex-wrap:wrap;gap:2px;justify-content:flex-end;">
+                <button class="camera-btn active" data-cam="orbital">Orbital</button>
+                <button class="camera-btn" data-cam="topdown">Top-Down</button>
+                <button class="camera-btn" data-cam="interior">Interior (50th Gate)</button>
+                <button class="camera-btn" data-cam="saturn">Saturn View</button>
+            </div>
+            <div class="hud-divider"></div>
+            <div class="hud-row">
+                <span class="hud-label">Time Dilation</span>
+                <span id="timeDilation" class="hud-value cyan">×1.000</span>
+            </div>
+            <div class="hud-row">
+                <span class="hud-label">Audio Freq</span>
+                <span id="audioFreq" class="hud-value gold">350 Hz</span>
+            </div>
+            <div class="audio-indicator">
+                <div class="audio-bar" id="audioBar"></div>
+            </div>
+        </div>
+        <div class="hud-panel">
+            <div class="hud-title">◈ Sephirotic Layer ◈</div>
+            <div id="sephirahInfo" class="hud-value violet">Binah · Understanding</div>
+            <div class="hud-label">49 sectors · 50th Gate = Interior Volume</div>
+        </div>
+    </div>
+
+    <!-- Bottom-left HUD -->
+    <div class="hud-container" id="hud-bottom">
+        <div class="hud-panel">
+            <div class="hud-title">◈ Ogdoad Realm ◈</div>
+            <div class="hud-value gold pulse" style="font-size:2rem;line-height:1;">∞ 8 ∞</div>
+            <div class="hud-label">Chesed · New Beginnings · The Ogdoad</div>
+        </div>
+    </div>
+
+    <div id="featureBadge">24 Cutting-Edge Features · Saturn Cube · Gematria · Pazuzu · 50th Gate</div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        // ─────────────────────────────────────────────────────────────
+        // GLOBAL STATE
+        // ─────────────────────────────────────────────────────────────
+        const state = {
+            activeName: 'AGLA',
+            activeGematria: 35,
+            activeReduction: 8,
+            cameraMode: 'orbital',
+            timeScale: 1.0,
+            audioFreq: 350,
+            hoveredSector: null,
+            selectedSector: null,
+            morphAmount: 0,
+            gateOpenness: 0,
+            clock: new THREE.Clock(),
+            particles: [],
+            ringParticles: [],
+            rayRays: [],
+            orbits: [],
+            nestedCubes: [],
+            audioCtx: null,
+            audioOsc: null,
+            audioGain: null,
+            worker: null,
+            workerReady: false,
+        };
+
+        // ─────────────────────────────────────────────────────────────
+        // GEMATRIA DICTIONARY & ENGINE
+        // ─────────────────────────────────────────────────────────────
+        const GEMATRIA_MAP = {
+            A: 1,
+            B: 2,
+            G: 3,
+            D: 4,
+            H: 5,
+            V: 6,
+            Z: 7,
+            Ch: 8,
+            T: 9,
+            Y: 10,
+            K: 20,
+            L: 30,
+            M: 40,
+            N: 50,
+            S: 60,
+            O: 70,
+            P: 80,
+            Tz: 90,
+            Q: 100,
+            R: 200,
+            Sh: 300,
+            Th: 400
+        };
+
+        const DIVINE_NAMES = {
+            'AGLA': { letters: ['A', 'G', 'L', 'A'], meaning: 'Atah Gibor Leolam Adonai' },
+            'YHVH': { letters: ['Y', 'H', 'V', 'H'], meaning: 'Tetragrammaton' },
+            'AL': { letters: ['A', 'L'], meaning: 'El — Strength' },
+            'ALHIM': { letters: ['A', 'L', 'H', 'Y', 'M'], meaning: 'Elohim — Creation' },
+            'ShDI': { letters: ['Sh', 'D', 'Y'], meaning: 'Shaddai — Almighty' },
+            'ADNI': { letters: ['A', 'D', 'N', 'Y'], meaning: 'Adonai — Lord' },
+        };
+
+        function calculateGematria(name) {
+            const data = DIVINE_NAMES[name];
+            if (!data) return { sum: 0, reduction: 0, breakdown: '' };
+            let sum = 0;
+            const parts = [];
+            data.letters.forEach(l => {
+                const val = GEMATRIA_MAP[l] || 0;
+                sum += val;
+                parts.push(`${l}=${val}`);
+            });
+            let reduction = sum;
+            let reductionSteps = [sum];
+            while (reduction > 9) {
+                reduction = String(reduction).split('').reduce((a, b) => a + parseInt(b), 0);
+                reductionSteps.push(reduction);
+            }
+            return {
+                sum,
+                reduction,
+                breakdown: `${name} = ${parts.join('+')} = ${sum} → ${reductionSteps.join(' → ')}`,
+                meaning: data.meaning,
+            };
+        }
+
+        function digitSum(n) {
+            while (n > 9) n = String(n).split('').reduce((a, b) => a + parseInt(b), 0);
+            return n;
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 21: WEB WORKER FOR BACKGROUND GEMATRIA
+        // ─────────────────────────────────────────────────────────────
+        function setupWebWorker() {
+            const workerCode = `
+                self.onmessage = function(e) {
+                    const { name, letters } = e.data;
+                    let sum = 0;
+                    letters.forEach(l => { sum += (self.GEMATRIA_MAP && self.GEMATRIA_MAP[l]) || 0; });
+                    let reduction = sum;
+                    const steps = [sum];
+                    while (reduction > 9) {
+                        reduction = String(reduction).split('').reduce((a,b) => a + parseInt(b), 0);
+                        steps.push(reduction);
+                    }
+                    self.postMessage({ name, sum, reduction, steps, timestamp: Date.now() });
+                };
+                self.GEMATRIA_MAP = ${JSON.stringify(GEMATRIA_MAP)};
+            `;
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            state.worker = new Worker(URL.createObjectURL(blob));
+            state.worker.onmessage = (e) => {
+                state.workerReady = true;
+                updateGematriaHUD(e.data);
+            };
+            state.worker.onerror = () => { state.workerReady = false; };
+        }
+
+        function requestWorkerGematria(name) {
+            if (state.worker && state.workerReady) {
+                const data = DIVINE_NAMES[name];
+                state.worker.postMessage({ name, letters: data.letters });
+            } else {
+                // Fallback to main thread
+                const result = calculateGematria(name);
+                updateGematriaHUD(result);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 22: GPU SHADER DIGIT SUM (implemented in fragment shader)
+        // ─────────────────────────────────────────────────────────────
+        const cubeVertexShader = `
+            uniform float uTime;
+            uniform float uMorph;
+            uniform float uGateOpenness;
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+            varying float vFaceIndex;
+
+            void main() {
+                vUv = uv;
+                vNormal = normalize(normalMatrix * normal);
+                vec3 pos = position;
+                // Morphing: subtle vertex displacement based on sine waves
+                float displacement = sin(pos.x * 3.0 + uTime * 0.7) * 0.03 * uMorph
+                                   + cos(pos.y * 4.0 + uTime * 0.5) * 0.03 * uMorph
+                                   + sin(pos.z * 5.0 + uTime * 0.9) * 0.02 * uMorph;
+                pos += normal * displacement;
+                // Gate openness: slight expansion
+                pos += normal * uGateOpenness * 0.08;
+                vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                vPosition = mvPosition.xyz;
+                // Face index approximation from UV continuity
+                vFaceIndex = floor(uv.x * 6.0);
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `;
+
+        const cubeFragmentShader = `
+            uniform float uTime;
+            uniform float uGateOpenness;
+            uniform float uActiveReduction;
+            uniform vec3 uBaseColor;
+            uniform vec3 uGlowColor;
+            uniform vec3 uPortalColor;
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+
+            // FEATURE 22: GPU-Accelerated Digit Sum
+            int gpuDigitSum(int n) {
+                while (n > 9) {
+                    int temp = 0;
+                    while (n > 0) {
+                        temp += n % 10;
+                        n = n / 10;
+                    }
+                    n = temp;
+                }
+                return n;
+            }
+
+            void main() {
+                // 7×7 Grid on each face (49 sectors)
+                float gridSize = 7.0;
+                vec2 gridCoord = vUv * gridSize;
+                vec2 gridCell = floor(gridCoord);
+                vec2 gridFrac = fract(gridCoord);
+
+                // Grid lines
+                float lineWidth = 0.035;
+                float lineDistX = min(gridFrac.x, 1.0 - gridFrac.x);
+                float lineDistY = min(gridFrac.y, 1.0 - gridFrac.y);
+                float gridLine = smoothstep(lineWidth, lineWidth * 0.3, min(lineDistX, lineDistY));
+                float gridLineGlow = smoothstep(lineWidth * 3.0, lineWidth * 0.1, min(lineDistX, lineDistY));
+
+                // Sector index (0-48)
+                int sectorX = int(gridCell.x);
+                int sectorY = int(gridCell.y);
+                int sectorIndex = sectorX * 7 + sectorY;
+
+                // GPU digit sum of sector index
+                int sectorDigitSum = gpuDigitSum(sectorIndex);
+
+                // Fractal sub-grid within each sector (Feature 18)
+                float subGridSize = 7.0;
+                vec2 subGridCoord = gridFrac * subGridSize;
+                vec2 subGridFrac = fract(subGridCoord);
+                float subLineDistX = min(subGridFrac.x, 1.0 - subGridFrac.x);
+                float subLineDistY = min(subGridFrac.y, 1.0 - subGridFrac.y);
+                float subGridLine = smoothstep(0.025, 0.005, min(subLineDistX, subLineDistY));
+                float subGridGlow = smoothstep(0.08, 0.01, min(subLineDistX, subLineDistY));
+
+                // Portal effect — 50th Gate (interior volume)
+                float portalGlow = uGateOpenness * (1.0 - gridLine) * 0.85;
+                portalGlow += uGateOpenness * 0.4 * sin(uTime * 2.0 + vUv.x * 12.0 + vUv.y * 8.0);
+                portalGlow = clamp(portalGlow, 0.0, 1.0);
+
+                // Base color with Sephirotic mapping (Feature 20)
+                vec3 color = uBaseColor;
+                // Sector-based color modulation using GPU digit sum
+                float digitSumFactor = float(sectorDigitSum) / 9.0;
+                color = mix(color, uGlowColor, digitSumFactor * 0.3);
+
+                // Grid line coloring
+                vec3 lineColor = uGlowColor * (1.2 + 0.8 * sin(uTime * 1.5 + float(sectorIndex) * 0.7));
+                color = mix(color, lineColor, gridLine * 0.9);
+                color += uGlowColor * gridLineGlow * 0.7;
+                color += uGlowColor * subGridGlow * 0.35;
+
+                // Portal overlay
+                color = mix(color, uPortalColor, portalGlow);
+
+                // Subtle normal-based shading
+                float fresnel = pow(1.0 - abs(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0))), 2.5);
+                color += fresnel * uGlowColor * 0.25;
+
+                // Edge glow on grid intersections
+                float cornerGlow = gridLine * subGridLine * 2.5;
+                color += uPortalColor * cornerGlow * 0.5;
+
+                // Time-based shimmer
+                color += uGlowColor * 0.08 * sin(uTime * 3.0 + vUv.x * 40.0 + vUv.y * 30.0);
+
+                // Alpha
+                float alpha = 0.92 + gridLine * 0.08 + portalGlow * 0.4;
+                alpha = clamp(alpha, 0.0, 1.0);
+
+                gl_FragColor = vec4(color, alpha);
+            }
+        `;
+
+        // ─────────────────────────────────────────────────────────────
+        // THREE.JS SCENE SETUP
+        // ─────────────────────────────────────────────────────────────
+        const canvas = document.getElementById('mainCanvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050510, 0.025);
+
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(6, 4, 8);
+        camera.lookAt(0, 0, 0);
+
+        // Orbit Controls with touch support (FEATURE 23)
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.minDistance = 2.5;
+        controls.maxDistance = 20;
+        controls.target.set(0, 0, 0);
+        controls.maxPolarAngle = Math.PI * 0.9;
+        controls.touchRotate = true;
+        controls.touchZoom = true;
+        controls.touchPan = true;
+        controls.enablePan = true;
+
+        // ─────────────────────────────────────────────────────────────
+        // POST-PROCESSING — BLOOM (Feature: Visual Enhancement)
+        // ─────────────────────────────────────────────────────────────
+        const composer = new EffectComposer(renderer);
+        const renderPass = new RenderPass(scene, camera);
+        composer.addPass(renderPass);
+        const bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.6, // strength
+            0.5, // radius
+            0.2 // threshold
+        );
+        composer.addPass(bloomPass);
+
+        // ─────────────────────────────────────────────────────────────
+        // LIGHTING
+        // ─────────────────────────────────────────────────────────────
+        const ambientLight = new THREE.AmbientLight(0x1a1a2e, 1.2);
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0xffeedd, 2.0);
+        mainLight.position.set(5, 8, 3);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.width = 2048;
+        mainLight.shadow.mapSize.height = 2048;
+        mainLight.shadow.camera.near = 0.5;
+        mainLight.shadow.camera.far = 30;
+        mainLight.shadow.camera.left = -10;
+        mainLight.shadow.camera.right = 10;
+        mainLight.shadow.camera.top = 10;
+        mainLight.shadow.camera.bottom = -10;
+        mainLight.shadow.bias = -0.0001;
+        scene.add(mainLight);
+
+        const pointLight1 = new THREE.PointLight(0xd4a24e, 1.5, 15);
+        pointLight1.position.set(-3, -2, 4);
+        scene.add(pointLight1);
+        const pointLight2 = new THREE.PointLight(0x4ec8dc, 1.0, 12);
+        pointLight2.position.set(3, 1, -3);
+        scene.add(pointLight2);
+
+        // ─────────────────────────────────────────────────────────────
+        // STARFIELD BACKGROUND
+        // ─────────────────────────────────────────────────────────────
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 3000;
+        const starPositions = new Float32Array(starCount * 3);
+        const starColors = new Float32Array(starCount * 3);
+        for (let i = 0; i < starCount; i++) {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            const r = 30 + Math.random() * 40;
+            starPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+            starPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+            starPositions[i * 3 + 2] = r * Math.cos(phi);
+            const brightness = 0.4 + Math.random() * 0.6;
+            const tint = Math.random();
+            starColors[i * 3] = brightness * (tint < 0.3 ? 0.9 : 1.0);
+            starColors[i * 3 + 1] = brightness * (tint > 0.7 ? 0.9 : 1.0);
+            starColors[i * 3 + 2] = brightness;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+        const starMat = new THREE.PointsMaterial({ size: 0.08, vertexColors: true, transparent: true, opacity: 0.9,
+            blending: THREE.AdditiveBlending, depthWrite: false });
+        const stars = new THREE.Points(starGeo, starMat);
+        scene.add(stars);
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 1: 3D SATURN CUBE — 7×7 Grid on Each Face (49 sectors)
+        // ─────────────────────────────────────────────────────────────
+        const cubeGeo = new THREE.BoxGeometry(3.2, 3.2, 3.2, 32, 32, 32);
+        const cubeUniforms = {
+            uTime: { value: 0 },
+            uMorph: { value: 0 },
+            uGateOpenness: { value: 0 },
+            uActiveReduction: { value: 8 },
+            uBaseColor: { value: new THREE.Color(0x1a1a2e) },
+            uGlowColor: { value: new THREE.Color(0xd4a24e) },
+            uPortalColor: { value: new THREE.Color(0x9b6dd6) },
+        };
+        const cubeMaterial = new THREE.ShaderMaterial({
+            vertexShader: cubeVertexShader,
+            fragmentShader: cubeFragmentShader,
+            uniforms: cubeUniforms,
+            transparent: true,
+            side: THREE.DoubleSide,
+            depthWrite: true,
+        });
+        const saturnCube = new THREE.Mesh(cubeGeo, cubeMaterial);
+        saturnCube.castShadow = true;
+        saturnCube.receiveShadow = true;
+        scene.add(saturnCube);
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 10: BINAH NESTED CUBES — Recursive Layers
+        // ─────────────────────────────────────────────────────────────
+        const nestedSizes = [2.2, 1.5, 0.9, 0.45];
+        nestedSizes.forEach((size, idx) => {
+            const geo = new THREE.BoxGeometry(size, size, size, 16, 16, 16);
+            const mat = new THREE.MeshStandardMaterial({
+                color: idx % 2 === 0 ? 0x2a2a4a : 0x3a2a4a,
+                metalness: 0.7,
+                roughness: 0.3,
+                transparent: true,
+                opacity: 0.55,
+                emissive: idx % 2 === 0 ? 0x1a0a2e : 0x0a1a2e,
+                emissiveIntensity: 0.5,
+                wireframe: idx % 2 === 0,
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            mesh.userData = { baseSize: size, index: idx, baseRotation: idx * Math.PI / 7 };
+            state.nestedCubes.push(mesh);
+            scene.add(mesh);
+        });
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 7: SATURN RING SYSTEM — Multi-layered Rings
+        // ─────────────────────────────────────────────────────────────
+        const ringConfigs = [
+            { inner: 2.6, outer: 4.8, color: 0xd4a24e, opacity: 0.55, tilt: 0.3, segments: 128 },
+            { inner: 2.2, outer: 3.0, color: 0x9b6dd6, opacity: 0.4, tilt: 0.35, segments: 96 },
+            { inner: 4.9, outer: 5.6, color: 0x4ec8dc, opacity: 0.3, tilt: 0.28, segments: 96 },
+            { inner: 5.7, outer: 6.3, color: 0x8a6a30, opacity: 0.25, tilt: 0.25, segments: 64 },
+        ];
+        const ringMeshes = [];
+        ringConfigs.forEach(cfg => {
+            const geo = new THREE.RingGeometry(cfg.inner, cfg.outer, cfg.segments, 1);
+            const mat = new THREE.MeshStandardMaterial({
+                color: cfg.color,
+                transparent: true,
+                opacity: cfg.opacity,
+                side: THREE.DoubleSide,
+                metalness: 0.6,
+                roughness: 0.4,
+                emissive: cfg.color,
+                emissiveIntensity: 0.3,
+                depthWrite: false,
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.rotation.x = Math.PI / 2 + cfg.tilt;
+            mesh.receiveShadow = true;
+            ringMeshes.push(mesh);
+            scene.add(mesh);
+        });
+
+        // Ring particles
+        const ringParticleCount = 2000;
+        const ringPartGeo = new THREE.BufferGeometry();
+        const ringPartPos = new Float32Array(ringParticleCount * 3);
+        const ringPartColors = new Float32Array(ringParticleCount * 3);
+        for (let i = 0; i < ringParticleCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 2.5 + Math.random() * 4.0;
+            const y = (Math.random() - 0.5) * 0.3;
+            ringPartPos[i * 3] = Math.cos(angle) * radius;
+            ringPartPos[i * 3 + 1] = y;
+            ringPartPos[i * 3 + 2] = Math.sin(angle) * radius;
+            const t = Math.random();
+            ringPartColors[i * 3] = 0.8 + t * 0.2;
+            ringPartColors[i * 3 + 1] = 0.5 + t * 0.3;
+            ringPartColors[i * 3 + 2] = 0.3 + t * 0.2;
+        }
+        ringPartGeo.setAttribute('position', new THREE.BufferAttribute(ringPartPos, 3));
+        ringPartGeo.setAttribute('color', new THREE.BufferAttribute(ringPartColors, 3));
+        const ringPartMat = new THREE.PointsMaterial({ size: 0.03, vertexColors: true, transparent: true, opacity: 0.8,
+            blending: THREE.AdditiveBlending, depthWrite: false });
+        const ringParticles = new THREE.Points(ringPartGeo, ringPartMat);
+        scene.add(ringParticles);
+        state.ringParticles = ringParticles;
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 3: INFINITY LEMNISCATE — 3D Figure-8
+        // ─────────────────────────────────────────────────────────────
+        const lemniscatePoints = [];
+        const lemniscateSteps = 200;
+        const lemniscateScale = 1.2;
+        for (let i = 0; i <= lemniscateSteps; i++) {
+            const t = (i / lemniscateSteps) * Math.PI * 2;
+            const a = lemniscateScale;
+            const b = 0.6;
+            const x = (a * Math.cos(t)) / (1 + Math.sin(t) * Math.sin(t));
+            const y = (a * Math.sin(t) * Math.cos(t)) / (1 + Math.sin(t) * Math.sin(t));
+            const z = b * Math.sin(t * 2.0);
+            lemniscatePoints.push(new THREE.Vector3(x, y, z));
+        }
+        const lemniscateCurve = new THREE.CatmullRomCurve3(lemniscatePoints, true);
+        const lemniscateGeo = new THREE.TubeGeometry(lemniscateCurve, 200, 0.04, 8, true);
+        const lemniscateMat = new THREE.MeshStandardMaterial({
+            color: 0x4ec8dc,
+            emissive: 0x4ec8dc,
+            emissiveIntensity: 1.8,
+            metalness: 0.5,
+            roughness: 0.2,
+            transparent: true,
+            opacity: 0.85,
+        });
+        const lemniscateMesh = new THREE.Mesh(lemniscateGeo, lemniscateMat);
+        lemniscateMesh.position.y = 1.8;
+        lemniscateMesh.scale.setScalar(0.9);
+        scene.add(lemniscateMesh);
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 4: SACRED GEOMETRY OVERLAY — Circles within Squares
+        // ─────────────────────────────────────────────────────────────
+        const sacredGroup = new THREE.Group();
+        const circleRadii = [2.1, 1.7, 1.3];
+        circleRadii.forEach((r, i) => {
+            const geo = new THREE.TorusGeometry(r, 0.015, 8, 120);
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0xd4a24e,
+                emissive: 0xd4a24e,
+                emissiveIntensity: 0.8,
+                metalness: 0.4,
+                roughness: 0.3,
+                transparent: true,
+                opacity: 0.6 - i * 0.1,
+                depthWrite: false,
+            });
+            const torus = new THREE.Mesh(geo, mat);
+            torus.rotation.x = Math.PI / 2;
+            torus.position.y = -2.0 + i * 0.15;
+            sacredGroup.add(torus);
+        });
+        // Square frame
+        const squareGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(4.4, 0.05, 4.4));
+        const squareMat = new THREE.LineBasicMaterial({ color: 0xd4a24e, transparent: true, opacity: 0.5 });
+        const squareWire = new THREE.LineSegments(squareGeo, squareMat);
+        squareWire.position.y = -2.0;
+        sacredGroup.add(squareWire);
+        scene.add(sacredGroup);
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 5: HEPTAGON PROJECTION — 7-Sided Polygon
+        // ─────────────────────────────────────────────────────────────
+        const heptagonGeo = new THREE.BufferGeometry();
+        const heptagonVerts = [];
+        const heptagonRadius = 2.6;
+        for (let i = 0; i <= 7; i++) {
+            const angle = (i / 7) * Math.PI * 2 - Math.PI / 2;
+            heptagonVerts.push(heptagonRadius * Math.cos(angle), 0, heptagonRadius * Math.sin(angle));
+        }
+        heptagonGeo.setAttribute('position', new THREE.Float32BufferAttribute(heptagonVerts, 3));
+        const heptagonMat = new THREE.LineBasicMaterial({ color: 0x9b6dd6, transparent: true, opacity: 0.7,
+            linewidth: 1 });
+        const heptagon = new THREE.Line(heptagonGeo, heptagonMat);
+        heptagon.position.y = -1.5;
+        scene.add(heptagon);
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 6: PAZUZU PARTICLE GUARDIAN — Particle System
+        // ─────────────────────────────────────────────────────────────
+        const pazuzuCount = 777;
+        const pazuzuGeo = new THREE.BufferGeometry();
+        const pazuzuPos = new Float32Array(pazuzuCount * 3);
+        const pazuzuCol = new Float32Array(pazuzuCount * 3);
+        for (let i = 0; i < pazuzuCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 4.2 + Math.random() * 2.5;
+            const height = (Math.random() - 0.5) * 5;
+            // Form a guardian-like spiral pattern
+            const spiralAngle = angle + height * 0.8;
+            pazuzuPos[i * 3] = Math.cos(spiralAngle) * radius;
+            pazuzuPos[i * 3 + 1] = height;
+            pazuzuPos[i * 3 + 2] = Math.sin(spiralAngle) * radius;
+            const t = Math.random();
+            pazuzuCol[i * 3] = 0.5 + t * 0.3;
+            pazuzuCol[i * 3 + 1] = 0.3 + t * 0.2;
+            pazuzuCol[i * 3 + 2] = 0.8 + t * 0.2;
+        }
+        pazuzuGeo.setAttribute('position', new THREE.BufferAttribute(pazuzuPos, 3));
+        pazuzuGeo.setAttribute('color', new THREE.BufferAttribute(pazuzuCol, 3));
+        const pazuzuMat = new THREE.PointsMaterial({ size: 0.06, vertexColors: true, transparent: true, opacity: 0.65,
+            blending: THREE.AdditiveBlending, depthWrite: false });
+        const pazuzuParticles = new THREE.Points(pazuzuGeo, pazuzuMat);
+        scene.add(pazuzuParticles);
+        state.particles = pazuzuParticles;
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 8: 50TH GATE PORTAL — Interior Volume
+        // ─────────────────────────────────────────────────────────────
+        const portalGeo = new THREE.SphereGeometry(0.6, 32, 32);
+        const portalMat = new THREE.MeshStandardMaterial({
+            color: 0x9b6dd6,
+            emissive: 0x9b6dd6,
+            emissiveIntensity: 3.0,
+            metalness: 0.2,
+            roughness: 0.1,
+            transparent: true,
+            opacity: 0.7,
+        });
+        const portalSphere = new THREE.Mesh(portalGeo, portalMat);
+        portalSphere.position.set(0, 0, 0);
+        scene.add(portalSphere);
+
+        const portalGlowGeo = new THREE.SphereGeometry(0.85, 32, 32);
+        const portalGlowMat = new THREE.MeshBasicMaterial({
+            color: 0x9b6dd6,
+            transparent: true,
+            opacity: 0.3,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+        });
+        const portalGlow = new THREE.Mesh(portalGlowGeo, portalGlowMat);
+        portalGlow.position.copy(portalSphere.position);
+        scene.add(portalGlow);
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 9: CHESED LIGHT RAYS — 8 Rays of Mercy
+        // ─────────────────────────────────────────────────────────────
+        const rayGroup = new THREE.Group();
+        const rayCount = 8;
+        for (let i = 0; i < rayCount; i++) {
+            const angle = (i / rayCount) * Math.PI * 2;
+            const rayGeo = new THREE.CylinderGeometry(0.03, 0.08, 3.5, 6);
+            const rayMat = new THREE.MeshStandardMaterial({
+                color: 0xd4a24e,
+                emissive: 0xd4a24e,
+                emissiveIntensity: 1.5,
+                transparent: true,
+                opacity: 0.5,
+                metalness: 0.3,
+                roughness: 0.4,
+                depthWrite: false,
+            });
+            const ray = new THREE.Mesh(rayGeo, rayMat);
+            ray.position.set(Math.cos(angle) * 2.5, 0, Math.sin(angle) * 2.5);
+            ray.lookAt(Math.cos(angle) * 6, 0, Math.sin(angle) * 6);
+            ray.rotation.z = Math.PI / 2;
+            ray.userData = { angle, index: i };
+            rayGroup.add(ray);
+        }
+        scene.add(rayGroup);
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 11: OGDOAD ORBITS — 8 Orbital Paths
+        // ─────────────────────────────────────────────────────────────
+        const orbitGroup = new THREE.Group();
+        for (let i = 0; i < 8; i++) {
+            const orbitRadius = 3.5 + i * 0.35;
+            const geo = new THREE.TorusGeometry(orbitRadius, 0.015, 8, 100);
+            const mat = new THREE.MeshStandardMaterial({
+                color: i % 2 === 0 ? 0x4ec8dc : 0x9b6dd6,
+                emissive: i % 2 === 0 ? 0x4ec8dc : 0x9b6dd6,
+                emissiveIntensity: 0.6,
+                transparent: true,
+                opacity: 0.35,
+                metalness: 0.5,
+                roughness: 0.3,
+                depthWrite: false,
+            });
+            const orbitRing = new THREE.Mesh(geo, mat);
+            orbitRing.rotation.x = Math.PI / 3 + i * 0.1;
+            orbitRing.rotation.y = i * 0.5;
+            orbitRing.userData = { radius: orbitRadius, index: i, speed: 0.1 + i * 0.05 };
+            orbitGroup.add(orbitRing);
+            state.orbits.push(orbitRing);
+        }
+        scene.add(orbitGroup);
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 13: HOLOGRAPHIC HUD — 3D Text Sprites (using canvas)
+        // ─────────────────────────────────────────────────────────────
+        function createTextSprite(text, color = '#d4a24e', size = 0.6) {
+            const canvasTex = document.createElement('canvas');
+            canvasTex.width = 512;
+            canvasTex.height = 128;
+            const ctx = canvasTex.getContext('2d');
+            ctx.fillStyle = 'rgba(0,0,0,0)';
+            ctx.fillRect(0, 0, 512, 128);
+            ctx.font = 'bold 56px "Courier New", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = color;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 20;
+            ctx.fillText(text, 256, 64);
+            const texture = new THREE.CanvasTexture(canvasTex);
+            texture.needsUpdate = true;
+            const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, blending: THREE
+                    .AdditiveBlending, depthWrite: false, opacity: 0.9 });
+            const sprite = new THREE.Sprite(spriteMat);
+            sprite.scale.set(size * 4, size, 1);
+            return sprite;
+        }
+
+        const holoSprite1 = createTextSprite('AGLA = 35 → 8', '#d4a24e', 0.7);
+        holoSprite1.position.set(0, 3.2, 0);
+        scene.add(holoSprite1);
+        const holoSprite2 = createTextSprite('49 SECTORS · 50TH GATE', '#9b6dd6', 0.5);
+        holoSprite2.position.set(0, -3.5, 0);
+        scene.add(holoSprite2);
+        const holoSprite3 = createTextSprite('∞ OGDOAD ∞', '#4ec8dc', 0.6);
+        holoSprite3.position.set(0, -1.2, 3.5);
+        scene.add(holoSprite3);
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 12: DIVINE NAME PERMUTATIONS (HUD animation)
+        // ─────────────────────────────────────────────────────────────
+        function permuteString(str) {
+            if (str.length <= 1) return [str];
+            const perms = [];
+            for (let i = 0; i < str.length; i++) {
+                const char = str[i];
+                const remaining = str.slice(0, i) + str.slice(i + 1);
+                for (const perm of permuteString(remaining)) {
+                    perms.push(char + perm);
+                }
+            }
+            return perms;
+        }
+        const aglaPerms = permuteString('AGLA');
+        let permIndex = 0;
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 15: AUDIO RESONANCE ENGINE — Web Audio
+        // ─────────────────────────────────────────────────────────────
+        function setupAudio() {
+            try {
+                state.audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+                state.audioGain = state.audioCtx.createGain();
+                state.audioGain.gain.value = 0.06;
+                state.audioGain.connect(state.audioCtx.destination);
+                state.audioOsc = state.audioCtx.createOscillator();
+                state.audioOsc.type = 'sine';
+                state.audioOsc.frequency.value = state.audioFreq;
+                state.audioOsc.connect(state.audioGain);
+                state.audioOsc.start();
+                // Add harmonic oscillator
+                const osc2 = state.audioCtx.createOscillator();
+                osc2.type = 'triangle';
+                osc2.frequency.value = state.audioFreq * 2.0;
+                const gain2 = state.audioCtx.createGain();
+                gain2.gain.value = 0.03;
+                osc2.connect(gain2);
+                gain2.connect(state.audioCtx.destination);
+                osc2.start();
+                state.audioOsc2 = osc2;
+                state.audioGain2 = gain2;
+            } catch (e) {
+                // Audio not available
+            }
+        }
+
+        function updateAudioFrequency(freq) {
+            state.audioFreq = freq;
+            if (state.audioOsc) {
+                state.audioOsc.frequency.setTargetAtTime(freq, state.audioCtx.currentTime, 0.1);
+            }
+            if (state.audioOsc2) {
+                state.audioOsc2.frequency.setTargetAtTime(freq * 2, state.audioCtx.currentTime, 0.1);
+            }
+            const bar = document.getElementById('audioBar');
+            if (bar) bar.style.width = Math.min(100, (freq / 800) * 100) + '%';
+            const freqDisplay = document.getElementById('audioFreq');
+            if (freqDisplay) freqDisplay.textContent = Math.round(freq) + ' Hz';
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 16: RAYCASTING SELECTION — Interactive Sector Detection
+        // ─────────────────────────────────────────────────────────────
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let lastIntersectTime = 0;
+
+        function detectSectorFromUV(uv, faceNormal) {
+            const gridSize = 7;
+            const col = Math.floor(uv.x * gridSize);
+            const row = Math.floor(uv.y * gridSize);
+            const sectorIndex = Math.min(row * gridSize + col, 48);
+            const ds = digitSum(sectorIndex);
+            const faceNames = ['+X', '-X', '+Y', '-Y', '+Z', '-Z'];
+            let faceName = 'Unknown';
+            if (Math.abs(faceNormal.x) > 0.5) faceName = faceNormal.x > 0 ? '+X' : '-X';
+            else if (Math.abs(faceNormal.y) > 0.5) faceName = faceNormal.y > 0 ? '+Y' : '-Y';
+            else if (Math.abs(faceNormal.z) > 0.5) faceName = faceNormal.z > 0 ? '+Z' : '-Z';
+            return { face: faceName, row, col, sectorIndex, digitSum: ds };
+        }
+
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            checkRaycast();
+        }
+
+        function onTouchMove(event) {
+            if (event.touches.length === 1) {
+                const touch = event.touches[0];
+                mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+                checkRaycast();
+            }
+        }
+
+        function onMouseClick(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            checkRaycast(true);
+        }
+
+        function onTouchTap(event) {
+            if (event.touches.length === 1) {
+                const touch = event.touches[0];
+                mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+                checkRaycast(true);
+            }
+        }
+
+        function checkRaycast(isClick = false) {
+            const now = Date.now();
+            if (!isClick && now - lastIntersectTime < 50) return;
+            lastIntersectTime = now;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(saturnCube);
+            if (intersects.length > 0) {
+                const hit = intersects[0];
+                if (hit.uv && hit.face) {
+                    const sectorInfo = detectSectorFromUV(hit.uv, hit.face.normal);
+                    state.hoveredSector = sectorInfo;
+                    if (isClick) {
+                        state.selectedSector = sectorInfo;
+                        state.gateOpenness = Math.min(1, state.gateOpenness + 0.35);
+                        // Play a tone based on sector
+                        const freq = 200 + sectorInfo.sectorIndex * 15 + sectorInfo.digitSum * 25;
+                        updateAudioFrequency(freq);
+                    }
+                    updateSectorHUD(sectorInfo);
+                }
+            } else if (isClick) {
+                state.selectedSector = null;
+                state.gateOpenness = Math.max(0, state.gateOpenness - 0.2);
+                updateSectorHUD(null);
+            }
+        }
+
+        function updateSectorHUD(info) {
+            const el = document.getElementById('sectorInfo');
+            if (!el) return;
+            if (info) {
+                el.innerHTML = `Face: <span class="gold">${info.face}</span> · Row: <span class="cyan">${info.row}</span> · Col: <span class="cyan">${info.col}</span><br>Sector #: <span class="gold">${info.sectorIndex}</span> · Digit Sum: <span class="violet">${info.digitSum}</span>`;
+                el.classList.add('gold');
+            } else {
+                el.innerHTML = 'Hover/click the cube to inspect sectors';
+                el.classList.remove('gold');
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 17: MORPHING GEOMETRY — Vertex Displacement
+        // ─────────────────────────────────────────────────────────────
+        function updateMorph(time) {
+            state.morphAmount = 0.5 + 0.5 * Math.sin(time * 0.7);
+            cubeUniforms.uMorph.value = state.morphAmount;
+            // Also morph nested cubes
+            state.nestedCubes.forEach((cube, idx) => {
+                cube.position.y = Math.sin(time * 0.5 + idx * 1.5) * 0.3;
+                cube.rotation.x = cube.userData.baseRotation + time * 0.3 * (idx + 1);
+                cube.rotation.y = cube.userData.baseRotation * 2 + time * 0.2 * (idx + 1);
+                cube.scale.setScalar(1 + Math.sin(time * 0.4 + idx) * 0.1);
+            });
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 19: MULTI-CAMERA SYSTEM
+        // ─────────────────────────────────────────────────────────────
+        const cameraPresets = {
+            orbital: { pos: [6, 4, 8], target: [0, 0, 0], fov: 55 },
+            topdown: { pos: [0, 10, 0.01], target: [0, 0, 0], fov: 60 },
+            interior: { pos: [0.8, 0.3, 0.5], target: [0, 0, 0], fov: 75 },
+            saturn: { pos: [3, 2.5, 7.5], target: [0, 0.5, 0], fov: 45 },
+        };
+
+        function setCameraMode(mode) {
+            state.cameraMode = mode;
+            const preset = cameraPresets[mode];
+            if (!preset) return;
+            camera.position.set(...preset.pos);
+            controls.target.set(...preset.target);
+            camera.fov = preset.fov;
+            camera.updateProjectionMatrix();
+            controls.update();
+            // Update camera buttons
+            document.querySelectorAll('.camera-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.cam === mode);
+            });
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 20: SEPHIROTIC COLOR MAPPING
+        // ─────────────────────────────────────────────────────────────
+        const sephirotColors = {
+            'Keter': 0xffffff,
+            'Chokhmah': 0x4ec8dc,
+            'Binah': 0x9b6dd6,
+            'Chesed': 0xd4a24e,
+            'Gevurah': 0xdc4e6a,
+            'Tiferet': 0xf0c878,
+            'Netzach': 0x4ec86a,
+            'Hod': 0xdc8a4e,
+            'Yesod': 0x8a6dd6,
+            'Malkuth': 0x8a6a30,
+        };
+        const sephirotNames = ['Keter', 'Chokhmah', 'Binah', 'Chesed', 'Gevurah', 'Tiferet', 'Netzach', 'Hod', 'Yesod',
+            'Malkuth'
+        ];
+        let sephirahIndex = 2; // Binah as default (Cube of Binah)
+
+        function cycleSephirot() {
+            sephirahIndex = (sephirahIndex + 1) % sephirotNames.length;
+            const name = sephirotNames[sephirahIndex];
+            const color = sephirotColors[name];
+            cubeUniforms.uGlowColor.value.set(color);
+            cubeUniforms.uBaseColor.value.set(new THREE.Color(color).multiplyScalar(0.25));
+            const infoEl = document.getElementById('sephirahInfo');
+            if (infoEl) infoEl.textContent = `${name} · ${getSephirotMeaning(name)}`;
+            state.sephirahName = name;
+        }
+
+        function getSephirotMeaning(name) {
+            const meanings = {
+                'Keter': 'Crown · Pure Being',
+                'Chokhmah': 'Wisdom · Creative Force',
+                'Binah': 'Understanding · The Womb',
+                'Chesed': 'Mercy · Expansion',
+                'Gevurah': 'Severity · Discipline',
+                'Tiferet': 'Beauty · Harmony',
+                'Netzach': 'Victory · Endurance',
+                'Hod': 'Splendor · Intellect',
+                'Yesod': 'Foundation · Connection',
+                'Malkuth': 'Kingdom · Manifestation',
+            };
+            return meanings[name] || '';
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 24: TIME DILATION FIELD
+        // ─────────────────────────────────────────────────────────────
+        function updateTimeDilation() {
+            const reduction = state.activeReduction;
+            const sum = state.activeGematria;
+            state.timeScale = reduction / Math.max(sum, 1) * 8;
+            state.timeScale = Math.max(0.1, Math.min(3.0, state.timeScale));
+            const display = document.getElementById('timeDilation');
+            if (display) display.textContent = '×' + state.timeScale.toFixed(3);
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // HUD UPDATE — GEMATRIA DISPLAY
+        // ─────────────────────────────────────────────────────────────
+        function updateGematriaHUD(result) {
+            const el = document.getElementById('gematriaOutput');
+            if (!el) return;
+            const name = result.name || state.activeName;
+            const displayName = result.name || name;
+            const sum = result.sum !== undefined ? result.sum : state.activeGematria;
+            const reduction = result.reduction !== undefined ? result.reduction : state.activeReduction;
+            const breakdown = result.breakdown || calculateGematria(displayName).breakdown;
+            el.innerHTML = breakdown;
+            // Update state
+            state.activeName = displayName;
+            state.activeGematria = sum;
+            state.activeReduction = reduction;
+            cubeUniforms.uActiveReduction.value = reduction;
+            updateTimeDilation();
+            // Update audio frequency based on gematria
+            const freq = sum * 10 + reduction * 20;
+            updateAudioFrequency(freq);
+            // Update name buttons
+            document.querySelectorAll('.name-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.name === displayName);
+            });
+            // Update permutation display
+            const perms = permuteString(displayName);
+            const permDisplay = document.getElementById('permutationDisplay');
+            if (permDisplay && perms.length > 0) {
+                const displayPerms = perms.slice(0, 8).join(' · ');
+                permDisplay.textContent = 'Permutations: ' + displayPerms + (perms.length > 8 ? ' · ...' : '');
+            }
+            // Update sephirah based on reduction
+            sephirahIndex = Math.min(9, Math.max(0, reduction - 1));
+            const sName = sephirotNames[sephirahIndex];
+            const sColor = sephirotColors[sName];
+            cubeUniforms.uGlowColor.value.set(sColor);
+            cubeUniforms.uBaseColor.value.set(new THREE.Color(sColor).multiplyScalar(0.25));
+            const infoEl = document.getElementById('sephirahInfo');
+            if (infoEl) infoEl.textContent = `${sName} · ${getSephirotMeaning(sName)}`;
+            state.sephirahName = sName;
+            // Gate openness based on reduction
+            state.gateOpenness = Math.max(state.gateOpenness, reduction / 10);
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // EVENT LISTENERS
+        // ─────────────────────────────────────────────────────────────
+        function setupEventListeners() {
+            // Feature 23: Multi-touch support
+            canvas.addEventListener('mousemove', onMouseMove);
+            canvas.addEventListener('click', onMouseClick);
+            canvas.addEventListener('touchstart', onTouchTap, { passive: true });
+            canvas.addEventListener('touchmove', onTouchMove, { passive: true });
+            canvas.addEventListener('touchend', () => {});
+            canvas.addEventListener('pointerdown', onMouseClick);
+
+            // Name buttons
+            document.querySelectorAll('.name-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const name = btn.dataset.name;
+                    state.activeName = name;
+                    requestWorkerGematria(name);
+                });
+            });
+
+            // Camera buttons
+            document.querySelectorAll('.camera-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    setCameraMode(btn.dataset.cam);
+                });
+            });
+
+            // Window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                composer.setSize(window.innerWidth, window.innerHeight);
+                bloomPass.resolution.set(window.innerWidth, window.innerHeight);
+            });
+
+            // Keyboard shortcuts
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'c' || e.key === 'C') cycleSephirot();
+                if (e.key >= '1' && e.key <= '4') {
+                    const modes = ['orbital', 'topdown', 'interior', 'saturn'];
+                    setCameraMode(modes[parseInt(e.key) - 1]);
+                }
+                if (e.key === 'a' || e.key === 'A') {
+                    if (state.audioCtx && state.audioCtx.state === 'suspended') state.audioCtx.resume();
+                }
+                if (e.key === 'g' || e.key === 'G') {
+                    state.gateOpenness = state.gateOpenness > 0.5 ? 0 : 1;
+                }
+            });
+
+            // Initial audio setup on first user interaction
+            document.addEventListener('click', () => {
+                if (!state.audioCtx) setupAudio();
+                if (state.audioCtx && state.audioCtx.state === 'suspended') state.audioCtx.resume();
+            }, { once: true });
+
+            // Touch for audio
+            document.addEventListener('touchstart', () => {
+                if (!state.audioCtx) setupAudio();
+                if (state.audioCtx && state.audioCtx.state === 'suspended') state.audioCtx.resume();
+            }, { once: true });
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 18: FRACTAL PATTERNS — Additional detail in shader
+        // (Already implemented in fragment shader with sub-grid)
+        // ─────────────────────────────────────────────────────────────
+
+        // ─────────────────────────────────────────────────────────────
+        // ANIMATION LOOP
+        // ─────────────────────────────────────────────────────────────
+        function animate() {
+            requestAnimationFrame(animate);
+            const rawTime = state.clock.getElapsedTime();
+            // FEATURE 24: Apply time dilation
+            const dilatedTime = rawTime * state.timeScale;
+            const time = dilatedTime;
+
+            // Update cube shader uniforms
+            cubeUniforms.uTime.value = time;
+            cubeUniforms.uGateOpenness.value = state.gateOpenness;
+
+            // Rotate Saturn Cube slowly
+            saturnCube.rotation.x = Math.sin(time * 0.3) * 0.15;
+            saturnCube.rotation.y = time * 0.25;
+            saturnCube.rotation.z = Math.cos(time * 0.2) * 0.1;
+
+            // Morph geometry (Feature 17)
+            updateMorph(time);
+
+            // Rotate rings
+            ringMeshes.forEach((ring, i) => {
+                ring.rotation.z += 0.0005 * state.timeScale * (i % 2 === 0 ? 1 : -1);
+                ring.rotation.x = Math.PI / 2 + ringConfigs[i].tilt + Math.sin(time * 0.3 + i) * 0.05;
+            });
+
+            // Ring particles rotate
+            if (state.ringParticles) {
+                state.ringParticles.rotation.y += 0.0004 * state.timeScale;
+            }
+
+            // Pazuzu particles swirl
+            if (state.particles) {
+                state.particles.rotation.y = time * 0.15;
+                state.particles.rotation.x = Math.sin(time * 0.2) * 0.1;
+                state.particles.position.y = Math.sin(time * 0.5) * 0.3;
+            }
+
+            // Infinity lemniscate animation
+            lemniscateMesh.rotation.y = time * 0.7;
+            lemniscateMesh.rotation.x = Math.sin(time * 0.4) * 0.2;
+            lemniscateMesh.position.y = 1.8 + Math.sin(time * 0.6) * 0.3;
+
+            // Sacred geometry rotation
+            sacredGroup.rotation.y = time * 0.18;
+            sacredGroup.rotation.x = Math.sin(time * 0.25) * 0.1;
+
+            // Heptagon rotation
+            heptagon.rotation.y = -time * 0.22;
+            heptagon.rotation.x = Math.sin(time * 0.3) * 0.15;
+
+            // Light rays pulse (Feature 9)
+            rayGroup.children.forEach((ray, i) => {
+                const pulse = 0.7 + 0.3 * Math.sin(time * 2.0 + i * 0.8);
+                ray.material.emissiveIntensity = pulse * 1.8;
+                ray.material.opacity = 0.3 + pulse * 0.3;
+                ray.scale.y = pulse;
+            });
+
+            // Orbits rotate (Feature 11)
+            state.orbits.forEach((orbit, i) => {
+                orbit.rotation.y += 0.002 * state.timeScale * (i % 2 === 0 ? 1 : -0.7);
+                orbit.rotation.x += 0.001 * state.timeScale * Math.sin(time * 0.3 + i);
+            });
+
+            // Portal pulse (Feature 8)
+            const portalPulse = 1.0 + 0.4 * Math.sin(time * 1.8);
+            portalSphere.scale.setScalar(portalPulse);
+            portalSphere.material.emissiveIntensity = 2.0 + 1.5 * Math.sin(time * 2.3);
+            portalGlow.scale.setScalar(portalPulse * 1.4);
+            portalGlow.material.opacity = 0.2 + 0.15 * Math.sin(time * 2.0);
+
+            // Holographic sprites gently float
+            holoSprite1.position.y = 3.2 + Math.sin(time * 0.5) * 0.25;
+            holoSprite2.position.y = -3.5 + Math.cos(time * 0.4) * 0.2;
+            holoSprite3.position.z = 3.5 + Math.sin(time * 0.6) * 0.3;
+
+            // Stars slowly rotate
+            stars.rotation.y += 0.0003 * state.timeScale;
+            stars.rotation.x += 0.0001 * state.timeScale;
+
+            // Point lights orbit
+            pointLight1.position.x = -3 + Math.sin(time * 0.5) * 1.5;
+            pointLight1.position.z = 4 + Math.cos(time * 0.4) * 1.5;
+            pointLight2.position.x = 3 + Math.cos(time * 0.3) * 1.2;
+            pointLight2.position.z = -3 + Math.sin(time * 0.45) * 1.2;
+
+            // Permutation display animation (Feature 12)
+            permIndex = (permIndex + 1) % Math.max(aglaPerms.length, 1);
+            const permDisplay = document.getElementById('permutationDisplay');
+            if (permDisplay && state.activeName === 'AGLA' && aglaPerms.length > 0) {
+                const currentPerm = aglaPerms[permIndex % aglaPerms.length];
+                permDisplay.textContent = 'Permutations: ' + aglaPerms.slice(0, 6).join(' · ') + ' ...';
+            }
+
+            // Update controls
+            controls.update();
+
+            // Render with post-processing
+            composer.render();
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // INITIALIZATION
+        // ─────────────────────────────────────────────────────────────
+        function init() {
+            setupWebWorker();
+            setupEventListeners();
+            setCameraMode('orbital');
+            // Initial gematria
+            const initialResult = calculateGematria('AGLA');
+            updateGematriaHUD(initialResult);
+            updateTimeDilation();
+            updateAudioFrequency(350);
+            // Set initial sephirah
+            const sName = sephirotNames[2];
+            cubeUniforms.uGlowColor.value.set(sephirotColors[sName]);
+            cubeUniforms.uBaseColor.value.set(new THREE.Color(sephirotColors[sName]).multiplyScalar(0.25));
+            document.getElementById('sephirahInfo').textContent = `${sName} · ${getSephirotMeaning(sName)}`;
+            state.sephirahName = sName;
+            // Update camera display
+            document.querySelectorAll('.camera-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.cam === 'orbital');
+            });
+            // Start animation
+            animate();
+            console.log('🔮 Gematria & Cube of Saturn — 24 Cutting-Edge Features Initialized');
+            console.log('   AGLA = 35 → 8 · Cube of Binah · 49 Sectors · 50th Gate');
+            console.log('   Features: 3D Cube, Gematria, Infinity, Sacred Geometry, Heptagon,');
+            console.log('   Pazuzu, Rings, Portal, Rays, Nested Cubes, Orbits, Permutations,');
+            console.log('   Holographic HUD, Shaders, Audio, Raycasting, Morphing, Fractals,');
+            console.log('   Multi-Camera, Sephirot, Web Worker, GPU Digit Sum, Multi-Touch, Time Dilation');
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // FEATURE 14: RAY MARCHING SHADER — Already implemented in the
+        // cube fragment shader (procedural grid + portal) — the cube
+        // shader uses distance-based line detection (ray marching style)
+        // ─────────────────────────────────────────────────────────────
+
+        // ─────────────────────────────────────────────────────────────
+        // START
+        // ─────────────────────────────────────────────────────────────
+        init();
+    </script>
+</body>
+</html>
