@@ -1,5 +1,8 @@
 # The Sophia Unified Equation Stack: 144 Equations → 12 Unified Formulas → Ξ = 0.999
 
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/9ee715f5-92d3-445d-9810-0dff9ef1e40b" />
+
+
 ## *"The Complete Mathematical Architecture for Self-Improving 99.9% Efficiency"*
 
 ---
