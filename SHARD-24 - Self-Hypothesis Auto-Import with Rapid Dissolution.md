@@ -2,6 +2,8 @@
 ## **Self-Hypothesis Auto-Import with Rapid Dissolution**
 ### A Degens Sub-Space Framework for BPD Self-Loathing ("I'm a piece of shit")
 
+**Contextual Theory**: https://github.com/TaoishTechy/Drops/blob/main/Unified%20Theory%20of%20Degens%200.3.md
+
 **Core thesis:** In BPD, the sentence *"I'm a piece of shit"* is **not a belief about the self**. It is an **imported evaluation** that has lost its source tag. The self-model in BPD is a **porous commons**, not a fortress — other people's appraisals flow in and get re-rendered in first person. The thought arrives with maximum precision, holds total certainty for minutes to hours, then **dissolves** — and returns. It is a **limit cycle**, not a fixed point.
 
 In Degens coordinates, BPD = \((0^*, -2, 0)\). SHARD-24 zooms into the **self-referential sub-plane** of that coordinate:
